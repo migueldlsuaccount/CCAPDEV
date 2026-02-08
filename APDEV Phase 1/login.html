@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Lab Reservation</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+<div class="auth-card">
+  <h2>Lab Reservation</h2>
+
+  <input type="email" id="email" placeholder="DLSU Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <div class="row">
+    <input type="checkbox" id="remember">
+    <label for="remember">Remember me</label>
+  </div>
+
+  <button onclick="login()">Login</button>
+
+  <p class="link">
+    No account? <a href="register.html">Register here</a>
+  </p>
+
+  <p class="error" id="errorMsg">Invalid credentials</p>
+</div>
+
+<script src="auth.js"></script>
+</body>
+</html>
