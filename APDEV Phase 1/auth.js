@@ -6,8 +6,32 @@ let users = JSON.parse(localStorage.getItem("users")) || [
     role: "student"
   },
   {
+    name: "Ian Jamero",
+    email: "ian@dlsu.edu.ph",
+    password: "1234",
+    role: "student"
+  },
+  {
+    name: "John Christian Llamas",
+    email: "john@dlsu.edu.ph",
+    password: "1234",
+    role: "student"
+  },
+  {
+    name: "Ethan Sia",
+    email: "john@dlsu.edu.ph",
+    password: "1234",
+    role: "student"
+  },
+  {
     name: "Lab Tech Ramon",
     email: "tech@dlsu.edu.ph",
+    password: "admin",
+    role: "technician"
+  },
+  {
+    name: "Lab Tech Joe",
+    email: "tech2@dlsu.edu.ph",
     password: "admin",
     role: "technician"
   }
@@ -55,4 +79,5 @@ function register() {
 
   alert("Registration successful!");
   window.location.href = "login.html";
+
 }
