@@ -6,6 +6,7 @@ if (!storedUser) {
   window.location.href = "login.html";
 }
 
+
 const currentUser = JSON.parse(storedUser);
 
 function logout() {

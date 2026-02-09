@@ -19,7 +19,7 @@ let users = JSON.parse(localStorage.getItem("users")) || [
   },
   {
     name: "Ethan Sia",
-    email: "john@dlsu.edu.ph",
+    email: "ethan@dlsu.edu.ph",
     password: "1234",
     role: "student"
   },
@@ -54,7 +54,8 @@ function login() {
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem("currentUser", JSON.stringify(user));
 
-  window.location.href = "index.html";
+  //window.location.href = "index.html";
+  window.location.href = "main.html";
 }
 
 function register() {
