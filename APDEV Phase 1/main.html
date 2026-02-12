@@ -9,7 +9,6 @@
 
 <header>
   <h2>Lab Reservation</h2>
-<!--Current User Showed here -->
   <div style="display: flex; align-items: center; gap: 1rem;">
     <h4 id="userInfo"></h4>
     <button onclick="logout()">Logout</button>
@@ -17,11 +16,19 @@
 </header>
 
 <main>
-  <h3>Welcome to the Lab Reservation System</h3>
-  <p>Select a lab to view available slots.</p>
+  <h3 class="center">Welcome to the Lab Reservation System</h3>
+  <p class="center">Select a lab to view available slots.</p>
 
-  <!-- Lab list will be dynamically generated here -->
   <div id="labContainer"></div>
+  <h3 class="center">Slots</h3>
+  <div class="center" id="slotSection"></div>
+
+
+  <h3 class="center">Reservations</h3>
+  <button class="center" onclick="showMyReservations()">See My Reservations</button>
+
+  <div class="center" id="reservationSection"></div>
+
 </main>
 
 <script src="main.js"></script>
