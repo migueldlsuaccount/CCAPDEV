@@ -47,5 +47,5 @@ function displayLabs() {
       <button onclick="viewSlots(${lab.id})">View Slots</button>`;
     document.getElementById("labContainer").appendChild(labDiv);
   });
-  displayLabs();
 }
+displayLabs();
