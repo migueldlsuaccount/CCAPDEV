@@ -16,14 +16,26 @@ function logout() {
   window.location.href = "login.html";
 }
 
-
-// labs
+// Lab functionality
 const labs = [
-  { id: 1, name: "Computer Lab A", capacity: 20 },
-  { id: 2, name: "Computer Lab B", capacity: 15 },
-  { id: 3, name: "Computer Lab C", capacity: 25 }
+  { id: 1, 
+    name: "Computer Lab A", 
+    capacity: 20,
+    reserved: 0 
+  },
+  { id: 2, 
+    name: "Computer Lab B", 
+    capacity: 15,
+    reserved: 10
+  },
+  { id: 3, 
+    name: "Computer Lab C", 
+    capacity: 25,
+    reserved: 5
+  }
 ];
 
+// Function to display labs on the main page.
 function displayLabs() {
   document.getElementById("labContainer").innerHTML = "";
   labs.forEach(lab => {
@@ -31,9 +43,9 @@ function displayLabs() {
     labDiv.className = "lab";
     labDiv.innerHTML = `
       <h4>${lab.name}</h4>
-      <p>Capacity: ${lab.capacity}</p>
+      <p>Capacity: ${lab.reserved}/${lab.capacity}</p>
       <button onclick="viewSlots(${lab.id})">View Slots</button>`;
     document.getElementById("labContainer").appendChild(labDiv);
   });
+  displayLabs();
 }
-displayLabs();
