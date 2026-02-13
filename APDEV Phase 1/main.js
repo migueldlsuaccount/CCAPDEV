@@ -10,6 +10,7 @@ if (!storedUser) {
 }
 
 const currentUser = JSON.parse(storedUser);
+let users = JSON.parse(localStorage.getItem("users"));
 
 document.getElementById("userInfo").textContent =
   `Logged in as: ${currentUser.name} (${currentUser.role})`;
@@ -18,6 +19,155 @@ function logout() {
   localStorage.removeItem("currentUser");
   sessionStorage.removeItem("currentUser");
   window.location.href = "login.html";
+}
+
+function goToProfile() {
+  window.location.href = "profile.html";
+}
+
+function showTechSection() {
+  if (currentUser.role === "technician") {
+    document.getElementById("technicianSection").style.display = "block";
+    showWalkInForm();
+  }
+}
+
+function showWalkInForm() {
+  const section = document.getElementById("walkInSection");
+  section.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "walkins";
+
+  card.innerHTML = `
+    <h4>Reserve a Slot for Walk-in Student</h4>
+    
+    <div class="walkin-field">
+      <label for="walkInName">Student Name:</label>
+      <input type="text" id="walkInName" placeholder="Enter student name">
+    </div>
+
+    <div class="walkin-field">
+      <label for="walkInLab">Select Lab:</label>
+      <select id="walkInLab" onchange="showWalkInSlots()">
+        <option value="">-- Choose a Lab --</option>
+        ${labs.map(lab => `<option value="${lab.id}">${lab.name}</option>`).join("")}
+      </select>
+    </div>
+
+    <div class="walkin-field">
+      <label for="walkInDate">Select Date:</label>
+      <input type="date" id="walkInDate" onchange="showWalkInSlots()">
+    </div>
+
+    <div id="walkInSlotsCtn" style="display: none;">
+      <label>Select Time Slots:</label>
+      <div class="walkin-slots" id="walkInSlots"></div>
+    </div>
+
+    <div class="walkin-actions">
+      <button onclick="confirmWalkIn()">Confirm Reservation</button>
+      <button class="cancel" onclick="cancelWalkIn()">Clear</button>
+    </div>
+  `;
+
+  section.appendChild(card);
+  
+  const dateInput = document.getElementById("walkInDate");
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() + 7);
+
+  dateInput.min = today.toISOString().split("T")[0];
+  dateInput.max = maxDate.toISOString().split("T")[0];
+}
+
+let walkInSlots = [];
+
+function showWalkInSlots() {
+  walkInSlots = [];
+  
+  const labId = parseInt(document.getElementById("walkInLab").value);
+  const date = document.getElementById("walkInDate").value;
+
+  if (!labId || !date) {
+    document.getElementById("walkInSlotsCtn").style.display = "none";
+    return;
+  }
+
+  document.getElementById("walkInSlotsCtn").style.display = "block";
+
+  const container = document.getElementById("walkInSlots");
+  container.innerHTML = "";
+
+  generateTimeSlots().forEach(time => {
+    const btn = document.createElement("button");
+    btn.textContent = time;
+
+    const reserved = reservations.some(r =>
+      r.labId === labId &&
+      r.date === date &&
+      r.slots.includes(time)
+    );
+
+    if (reserved) {
+      btn.disabled = true;
+      btn.style.backgroundColor = "#ccc";
+    } else {
+      btn.onclick = () => selectWalkInSlot(time, btn);
+    }
+
+    container.appendChild(btn);
+  });
+}
+
+function selectWalkInSlot(time, btn) {
+  if (walkInSlots.includes(time)) {
+    walkInSlots = walkInSlots.filter(t => t !== time);
+    btn.classList.remove("selected");
+  } else {
+    walkInSlots.push(time);
+    btn.classList.add("selected");
+  }
+}
+
+function confirmWalkIn() {
+  const name = document.getElementById("walkInName").value;
+  const labId = parseInt(document.getElementById("walkInLab").value);
+  const date = document.getElementById("walkInDate").value;
+
+  if (!name || !labId || !date || walkInSlots.length === 0) {
+    alert("Please fill in all fields and select at least one time slot.");
+    return;
+  }
+
+  const reservation = {
+    id: Date.now(),
+    labId,
+    labName: labs.find(l => l.id === labId).name,
+    user: `${name} (Walk-in)`,
+    owner: name,
+    role: "student",
+    date,
+    slots: [...walkInSlots],
+    requestTime: new Date().toLocaleString(),
+    createdBy: currentUser.name
+  };
+
+  reservations.push(reservation);
+  localStorage.setItem("reservations", JSON.stringify(reservations));
+
+  alert(`Reservation for ${name} confirmed!`);
+  cancelWalkIn();
+}
+
+function cancelWalkIn() {
+  walkInSlots = [];
+  document.getElementById("walkInName").value = "";
+  document.getElementById("walkInLab").value = "";
+  document.getElementById("walkInDate").value = "";
+  document.getElementById("walkInSlotsCtn").style.display = "none";
+  document.getElementById("walkInSlots").innerHTML = "";
 }
 
 
@@ -29,7 +179,6 @@ const labs = [
 
 let reservations = JSON.parse(localStorage.getItem("reservations")) || [];
 
-//show labs
 
 function displayLabs() {
   document.getElementById("labContainer").innerHTML = "";
@@ -46,8 +195,8 @@ function displayLabs() {
 }
 
 displayLabs();
+showTechSection();
 
-//time slots
 
 function generateTimeSlots() {
   const slots = [];
@@ -71,7 +220,6 @@ function generateTimeSlots() {
   return slots;
 }
 
-//show slots
 
 function viewSlots(labId) {
   selectedSlots = [];
@@ -127,7 +275,6 @@ function renderSlots(labId) {
   const container = document.getElementById("slotButtons");
   container.innerHTML = "";
 
-  //generate buttons for each time period
   generateTimeSlots().forEach(time => {
     const button = document.createElement("button");
     button.textContent = time;
@@ -137,7 +284,7 @@ function renderSlots(labId) {
       r.date === date &&
       r.slots.includes(time)
     );
-    //block reserve slots
+    
     if (reserved) {
       button.disabled = true;
       button.style.backgroundColor = "#ccc";
@@ -169,7 +316,7 @@ function selectSlot(labId, time, buttonElement) {
   }
 
   if (selectedSlots.includes(time)) {
-    // Deselect
+
     selectedSlots = selectedSlots.filter(t => t !== time);
     buttonElement.style.backgroundColor = "";
   } else {
@@ -243,15 +390,11 @@ function showMyReservations() {
     const div = document.createElement("div");
     div.className = "reservation";
 
+    const userToFind = users.find(u => u.name === r.owner);
+    const profileLink = userToFind ? `<a href="profile.html?email=${userToFind.email}" style="color: #00693e; cursor: pointer;">View Profile</a>` : "";
 
-    /* Reserved By: (Name)
-       Lab:
-       Date Reserved:
-       Requested At:
-       Edit and Remove (remove if technician)
-    */
     div.innerHTML = `
-      <p><strong>Reserved By:</strong> ${r.user}</p>     
+      <p><strong>Reserved By:</strong> ${r.user} ${profileLink}</p>     
       <p><strong>Lab:</strong> ${r.labName}</p>
       <p><strong>Date Reserved:</strong> ${r.date}</p>
       <p><strong>Slots:</strong> ${r.slots.join(", ")}</p>
@@ -273,7 +416,6 @@ function removeReservation(id) {
 
   const now = new Date();
   const reservationDateTime = new Date(reservation.date + " " + reservation.slots[0]);
-  //10 mins before
   const diffMinutes = (now - reservationDateTime) / 60000;
 
   if (diffMinutes > 10) {
@@ -287,8 +429,6 @@ function removeReservation(id) {
   alert("Reservation removed.");
   showMyReservations();
 }
-
-//edit date
 
 function editReservation(id) {
   const reservation = reservations.find(r => r.id === id);
@@ -304,8 +444,8 @@ function editReservation(id) {
 
   // check for schedule conflicts
   const conflict = reservations.some(r =>
-    r.id !== id &&                           // not the same reservation
-    r.labId === reservation.labId &&         // same lab
+    r.id !== id &&                           
+    r.labId === reservation.labId &&         
     r.date === newDate &&                    // same date
     r.slots.some(slot => reservation.slots.includes(slot)) // overlapping slot
   );

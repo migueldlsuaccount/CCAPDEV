@@ -7,37 +7,49 @@ if (!users) {
       name: "Miguel Sybingco",
       email: "miguel@dlsu.edu.ph",
       password: "1234",
-      role: "student"
+      role: "student",
+      picture: "https://via.placeholder.com/150",
+      description: "Computer Science student"
     },
     {
       name: "Ian Jamero",
       email: "ian@dlsu.edu.ph",
       password: "1234",
-      role: "student"
+      role: "student",
+      picture: "https://via.placeholder.com/150",
+      description: "Computer Science student"
     },
     {
       name: "John Christian Llamas",
       email: "john@dlsu.edu.ph",
       password: "1234",
-      role: "student"
+      role: "student",
+      picture: "https://via.placeholder.com/150",
+      description: "Computer Science student"
     },
     {
       name: "Ethan Sia",
       email: "ethan@dlsu.edu.ph",
       password: "1234",
-      role: "student"
+      role: "student",
+      picture: "https://via.placeholder.com/150",
+      description: "Computer Science student"
     },
     {
       name: "Lab Tech Ramon",
       email: "tech@dlsu.edu.ph",
       password: "admin",
-      role: "technician"
+      role: "technician",
+      picture: "https://via.placeholder.com/150",
+      description: "Lab Technician"
     },
     {
       name: "Lab Tech Joe",
       email: "tech2@dlsu.edu.ph",
       password: "admin",
-      role: "technician"
+      role: "technician",
+      picture: "https://via.placeholder.com/150",
+      description: "Lab Technician"
     }
   ];
 
@@ -82,7 +94,14 @@ function register() {
     return;
   }
 
-  users.push({ name, email, password, role });
+  users.push({
+    name,
+    email,
+    password,
+    role,
+    picture: "https://via.placeholder.com/150",
+    description: "No description yet"
+  });
   localStorage.setItem("users", JSON.stringify(users));
 
   alert("Registration successful!");
