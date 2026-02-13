@@ -48,3 +48,213 @@ button {
   padding: 0.4rem 0.6rem;
 }
 
+.profile-card {
+  border: 1px solid #ccc;
+  padding: 2rem;
+  margin: 1rem auto;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  text-align: center;
+}
+
+.profile-card img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 2px solid #00693e;
+}
+
+.profile-card h3 {
+  color: #00693e;
+  margin: 0.5rem 0;
+}
+
+.profile-card p {
+  color: #666;
+  margin: 0.5rem 0;
+}
+
+.profile-field {
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.profile-field label {
+  display: block;
+  font-weight: bold;
+  color: #00693e;
+  margin-bottom: 0.5rem;
+}
+
+.profile-field input,
+.profile-field textarea {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.profile-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-actions button {
+  padding: 0.6rem 1rem;
+  background: #00693e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.profile-actions button:hover {
+  background: #005532;
+}
+
+.profile-actions .danger-btn {
+  background: #c41e3a;
+}
+
+.profile-actions .danger-btn:hover {
+  background: #a01830;
+}
+
+.profile-reservations {
+  background: white;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 4px;
+}
+
+.profile-reservations h4 {
+  color: #00693e;
+  margin-top: 0;
+}
+
+.reservation-item {
+  border: 1px solid #ddd;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+  background: #fafafa;
+  text-align: left;
+}
+
+.reservation-item p {
+  margin: 0.3rem 0;
+}
+
+.walkins {
+  border: 1px solid #ccc;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  width: 90%;
+  text-align: left;
+}
+
+.walkin-card h4 {
+  color: #00693e;
+  margin-top: 0;
+}
+
+.walkin-field {
+  margin: 1rem 0;
+}
+
+.walkin-field label {
+  display: block;
+  font-weight: bold;
+  color: #00693e;
+  margin-bottom: 0.5rem;
+}
+
+.walkin-field input,
+.walkin-field select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.walkin-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.walkin-slots button {
+  padding: 0.5rem;
+  background: white;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.walkin-slots button:hover:not(:disabled) {
+  background: #e8f5e9;
+  border-color: #00693e;
+}
+
+.walkin-slots button.selected {
+  background: #00693e;
+  color: white;
+  border-color: #00693e;
+}
+
+.walkin-slots button:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.walkin-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.walkin-actions button {
+  padding: 0.6rem 1.2rem;
+  background: #00693e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.walkin-actions button:hover {
+  background: #005532;
+}
+
+.walkin-actions button.cancel {
+  background: #666;
+}
+
+.walkin-actions button.cancel:hover {
+  background: #555;
+}
+
