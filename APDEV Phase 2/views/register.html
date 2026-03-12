@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register | Lab Reservation</title>
+  <link rel="stylesheet" href="/public/auth.css">
+</head>
+<body>
+
+<div class="auth-card">
+  <h2>Register</h2>
+
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="DLSU Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <select id="role">
+    <option value="student">Student</option>
+    <option value="technician">Lab Technician</option>
+  </select>
+
+  <button onclick="register()">Register</button>
+
+  <p class="link">
+    Already have an account? <a href="/login">Login</a>
+  </p>
+
+  <p class="error" id="errorMsg"></p>
+</div>
+
+<script>
+  async function register() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+
+    try {
+      const res = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errorMsg.textContent = data.error || 'Registration failed.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+      alert('Registration successful!');
+      window.location.href = '/login';
+    } catch {
+      errorMsg.textContent = 'Network error. Please try again.';
+      errorMsg.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

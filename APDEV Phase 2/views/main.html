@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lab Reservation</title>
+  <link rel="stylesheet" href="/public/main.css">
+</head>
+<body>
+
+<header>
+  <h2>Lab Reservation</h2>
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <h4 id="userInfo"></h4>
+    <button onclick="goToProfile()">My Profile</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<main>
+  <h3 class="center">Welcome to the Lab Reservation System</h3>
+  <p class="center">Select a lab to view available slots.</p>
+
+  <div id="labContainer"></div>
+
+  <div id="technicianSection" style="display: none;">
+    <h3 class="center">Reserve for Walk-in Student</h3>
+    <div class="center" id="walkInSection"></div>
+  </div>
+
+  <h3 class="center">Reservations</h3>
+  <button class="center" onclick="toggleReservations()">See My Reservations</button>
+  <div class="center" id="reservationSection"></div>
+</main>
+
+<script src="/public/main.js"></script>
+</body>
+</html>
