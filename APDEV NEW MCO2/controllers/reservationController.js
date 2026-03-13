@@ -22,7 +22,7 @@ exports.getReservations = async (req, res) => {
           : (r.anonymous && !isOwner && !isTech)
             ? 'Anonymous'
             : r.user.name,
-        ownerEmail: r.walkInName ? null : r.user.email,
+        ownerEmail: r.walkInName || r.anonymous ? null : r.user.email,
         owner: r.user._id,
         isOwner,
         date: r.date,
