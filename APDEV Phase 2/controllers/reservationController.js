@@ -14,23 +14,28 @@ exports.getReservations = async (req, res) => {
       .populate('createdBy', 'name')
       .sort({ date: 1 });
 
-    const shaped = reservations.map(r => ({
-      _id: r._id,
-      lab: r.lab,
-      displayName: r.walkInName
-        ? `${r.walkInName} (Walk-in)`
-        : (r.anonymous && r.user._id.toString() !== req.session.userId && req.session.userRole !== 'technician')
-          ? 'Anonymous'
-          : r.user.name,
-      ownerEmail: r.user.email,
-      owner: r.user._id,
-      date: r.date,
-      slots: r.slots,
-      anonymous: r.anonymous,
-      walkInName: r.walkInName,
-      createdBy: r.createdBy ? r.createdBy.name : null,
-      requestTime: r.requestTime
-    }));
+    const shaped = reservations.map(r => {
+      const isOwner = r.user._id.toString() === req.session.userId.toString();
+      const isTech  = req.session.userRole === 'technician';
+
+      return {
+        _id: r._id,
+        lab: r.lab,
+        displayName: r.walkInName
+          ? `${r.walkInName} (Walk-in)`
+          : (r.anonymous && !isOwner && !isTech)
+            ? 'Anonymous'
+            : r.user.name,
+        ownerEmail: r.walkInName ? null : r.user.email, 
+        owner: r.user._id,
+        date: r.date,
+        slots: r.slots,
+        anonymous: r.anonymous,
+        walkInName: r.walkInName,
+        createdBy: r.createdBy ? r.createdBy.name : null,
+        requestTime: r.requestTime
+      };
+    });
 
     res.json({ reservations: shaped });
   } catch (err) {
@@ -67,7 +72,7 @@ exports.createReservation = async (req, res) => {
     today.setHours(0, 0, 0, 0);
     const maxDate = new Date(today);
     maxDate.setDate(today.getDate() + 7);
-    const selected = new Date(date);
+    const selected = new Date(date + 'T00:00:00');
 
     if (selected < today || selected > maxDate) {
       return res.status(400).json({ error: 'Date must be within the next 7 days.' });
@@ -121,7 +126,7 @@ exports.createWalkIn = async (req, res) => {
     today.setHours(0, 0, 0, 0);
     const maxDate = new Date(today);
     maxDate.setDate(today.getDate() + 7);
-    const selected = new Date(date);
+    const selected = new Date(date + 'T00:00:00');
 
     if (selected < today || selected > maxDate) {
       return res.status(400).json({ error: 'Date must be within the next 7 days.' });
@@ -140,7 +145,7 @@ exports.createWalkIn = async (req, res) => {
 
     const reservation = await Reservation.create({
       lab: labId,
-      user: req.session.userId,   // the technician's own user ID (satisfies required field)
+      user: req.session.userId,
       walkInName,
       createdBy: req.session.userId,
       date,
@@ -168,8 +173,8 @@ exports.editReservation = async (req, res) => {
 
     if (!reservation) return res.status(404).json({ error: 'Reservation not found.' });
 
-    const isOwner = reservation.user.toString() === req.session.userId;
-    const isTech = req.session.userRole === 'technician';
+    const isOwner = reservation.user.toString() === req.session.userId.toString();
+    const isTech  = req.session.userRole === 'technician';
     if (!isOwner && !isTech) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
@@ -200,7 +205,7 @@ exports.editReservation = async (req, res) => {
   }
 };
 
-// DELETE /reservations/:id — technician only, within 10 min
+// DELETE /reservations/:id — technician only, within 10 min of reservation start
 exports.deleteReservation = async (req, res) => {
   try {
     if (req.session.userRole !== 'technician') {
@@ -211,8 +216,8 @@ exports.deleteReservation = async (req, res) => {
     if (!reservation) return res.status(404).json({ error: 'Reservation not found.' });
 
     const now = new Date();
-    const resDateTime = new Date(`${reservation.date}T${reservation.slots[0]}:00`);
-    const diffMinutes = (now - resDateTime) / 60000;
+    const bookedAt = new Date(reservation.requestTime);
+    const diffMinutes = (now - bookedAt) / 60000;
 
     if (diffMinutes > 10) {
       return res.status(400).json({ error: 'Cannot remove. The 10-minute window has passed.' });
