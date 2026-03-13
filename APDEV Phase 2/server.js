@@ -1,9 +1,11 @@
 const express = require('express');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db');
 
 const app = express();
 const PORT = 3000;
+const MONGODB_URI = 'mongodb://localhost:27017/lab_reservation';
 
 // Connect to MongoDB
 connectDB();
@@ -12,13 +14,17 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session setup (stored in memory for now)
+// Session setup 
 app.use(session({
   secret: 'lab_reservation_secret',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: MONGODB_URI,
+    collectionName: 'sessions'
+  }),
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000 // 1 day
+    maxAge: 24 * 60 * 60 * 1000 // 1 day default
   }
 }));
 
