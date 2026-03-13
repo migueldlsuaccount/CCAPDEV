@@ -1,14 +1,10 @@
 const Reservation = require('../models/Reservation');
 const Lab = require('../models/Lab');
 
-// GET /reservations — my reservations (or all if technician)
+// GET /reservations — 
 exports.getReservations = async (req, res) => {
   try {
-    const query = req.session.userRole === 'technician'
-      ? {}
-      : { user: req.session.userId };
-
-    const reservations = await Reservation.find(query)
+    const reservations = await Reservation.find({})
       .populate('lab', 'name')
       .populate('user', 'name email')
       .populate('createdBy', 'name')
@@ -26,8 +22,9 @@ exports.getReservations = async (req, res) => {
           : (r.anonymous && !isOwner && !isTech)
             ? 'Anonymous'
             : r.user.name,
-        ownerEmail: r.walkInName ? null : r.user.email, 
+        ownerEmail: r.walkInName ? null : r.user.email,
         owner: r.user._id,
+        isOwner,
         date: r.date,
         slots: r.slots,
         anonymous: r.anonymous,
@@ -165,7 +162,7 @@ exports.createWalkIn = async (req, res) => {
   }
 };
 
-// PATCH /reservations/:id — edit date
+// PATCH /reservations/:id — owner or technician can edit date
 exports.editReservation = async (req, res) => {
   try {
     const { date } = req.body;
@@ -205,7 +202,7 @@ exports.editReservation = async (req, res) => {
   }
 };
 
-// DELETE /reservations/:id — technician only, within 10 min of reservation start
+// DELETE /reservations/:id — technician only, within 10 min of booking
 exports.deleteReservation = async (req, res) => {
   try {
     if (req.session.userRole !== 'technician') {
@@ -230,3 +227,4 @@ exports.deleteReservation = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete reservation.' });
   }
 };
+
