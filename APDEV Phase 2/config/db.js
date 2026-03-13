@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 
+const MONGODB_URI = 'mongodb://localhost:27017/lab_reservation';
+
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(MONGODB_URI);
+    console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
+    console.error('MongoDB connection error:', error.message);
     process.exit(1);
   }
 };
