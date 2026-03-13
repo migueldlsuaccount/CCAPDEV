@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Lab Reservation</title>
+  <link rel="stylesheet" href="/public/auth.css">
+</head>
+<body>
+
+<div class="auth-card">
+  <h2>Lab Reservation</h2>
+
+  <input type="email" id="email" placeholder="DLSU Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <div class="row">
+    <input type="checkbox" id="remember">
+    <label for="remember">Remember me</label>
+  </div>
+
+  <button onclick="login()">Login</button>
+
+  <p class="link">
+    No account? <a href="/register">Register here</a>
+  </p>
+
+  <p class="error" id="errorMsg"></p>
+</div>
+
+<script>
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const remember = document.getElementById('remember').checked;
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.style.display = 'none';
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, remember })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errorMsg.textContent = data.error || 'Invalid credentials.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+      window.location.href = '/';
+    } catch {
+      errorMsg.textContent = 'Network error. Please try again.';
+      errorMsg.style.display = 'block';
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>
