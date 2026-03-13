@@ -1,11 +1,12 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
-const connectDB = require('./config/db');
 const User = require('./models/User');
 const Lab = require('./models/Lab');
 
+const MONGODB_URI = 'mongodb://localhost:27017/lab_reservation';
+
 const seed = async () => {
-  await connectDB();
+  await mongoose.connect(MONGODB_URI);
+  console.log('MongoDB connected');
 
   // Seed Labs
   const labCount = await Lab.countDocuments();
@@ -15,12 +16,12 @@ const seed = async () => {
       { name: 'Computer Lab B' },
       { name: 'Computer Lab C' }
     ]);
-    console.log('✅ Labs seeded');
+    console.log('Labs seeded');
   } else {
-    console.log('ℹ️  Labs already exist, skipping');
+    console.log('Labs already exist, skipping');
   }
 
-  // Seed Users (plain-text passwords, no hashing for this phase)
+  // Seed Users
   const userCount = await User.countDocuments();
   if (userCount === 0) {
     await User.insertMany([
@@ -73,13 +74,13 @@ const seed = async () => {
         description: 'Lab Technician'
       }
     ]);
-    console.log('✅ Users seeded');
+    console.log('Users seeded');
   } else {
-    console.log('ℹ️  Users already exist, skipping');
+    console.log('Users already exist, skipping');
   }
 
   await mongoose.disconnect();
-  console.log('✅ Seed complete');
+  console.log('Seed complete');
 };
 
 seed().catch(err => {
