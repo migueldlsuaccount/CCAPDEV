@@ -12,14 +12,29 @@ const seed = async () => {
   const labCount = await Lab.countDocuments();
   if (labCount === 0) {
     await Lab.insertMany([
-      { name: 'Computer Lab A' },
-      { name: 'Computer Lab B' },
-      { name: 'Computer Lab C' }
+      {
+        name: 'Computer Lab A',
+        availableSeats: ['Seat 1','Seat 2','Seat 3','Seat 4','Seat 5','Seat 6','Seat 7','Seat 8','Seat 9','Seat 10']
+      },
+      {
+        name: 'Computer Lab B',
+        availableSeats: ['Seat 1','Seat 2','Seat 3','Seat 4','Seat 5','Seat 6','Seat 7','Seat 8','Seat 9','Seat 10']
+      },
+      {
+        name: 'Computer Lab C',
+        availableSeats: ['Seat 1','Seat 2','Seat 3','Seat 4','Seat 5','Seat 6','Seat 7','Seat 8','Seat 9','Seat 10']
+      }
     ]);
     console.log('Labs seeded');
   } else {
     console.log('Labs already exist, skipping');
   }
+
+  // Ensure every lab has a seat capacity defined (used for per-slot availability)
+  await Lab.updateMany(
+    { availableSeats: { $exists: false } },
+    { $set: { availableSeats: ['Seat 1','Seat 2','Seat 3','Seat 4','Seat 5','Seat 6','Seat 7','Seat 8','Seat 9','Seat 10'] } }
+  );
 
   // Seed Users
   const userCount = await User.countDocuments();

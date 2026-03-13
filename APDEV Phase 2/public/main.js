@@ -63,6 +63,7 @@ async function displayLabs() {
 
       <div id="slotButtonsContainer" style="display:none;">
         <label>Select Time Slots:</label>
+        <p id="slotAvailability" class="slot-info"></p>
         <div id="slotButtons" class="walkin-slots"></div>
       </div>
 
@@ -100,22 +101,37 @@ async function handleLabSelection() {
 
   if (!labId || !date) {
     document.getElementById('slotButtonsContainer').style.display = 'none';
+    const info = document.getElementById('slotAvailability');
+    if (info) info.textContent = '';
     return;
   }
 
   selectedSlots = [];
 
   const res = await fetch(`/reservations/slots?labId=${labId}&date=${date}`);
-  const { takenSlots } = await res.json();
+  const { takenCounts, slotCapacity: apiSlotCapacity } = await res.json();
+
+  const slotCapacity = apiSlotCapacity || generateTimeSlots().length;
+  const taken = takenCounts || {};
+  const totalRemaining = generateTimeSlots().reduce((acc, time) => {
+    const remaining = slotCapacity - (taken[time] || 0);
+    return acc + Math.max(0, remaining);
+  }, 0);
 
   const container = document.getElementById('slotButtons');
+  const info = document.getElementById('slotAvailability');
+  if (info) {
+    info.textContent = `Slot capacity: ${slotCapacity}`;
+  }
+
   container.innerHTML = '';
   document.getElementById('slotButtonsContainer').style.display = 'block';
 
   generateTimeSlots().forEach(time => {
+    const remaining = slotCapacity - (taken[time] || 0);
     const btn = document.createElement('button');
-    btn.textContent = time;
-    if (takenSlots.includes(time)) {
+    btn.textContent = `${time} (${remaining})`;
+    if (remaining <= 0) {
       btn.disabled = true;
       btn.style.backgroundColor = '#ccc';
     } else {
@@ -201,6 +217,7 @@ function showWalkInForm() {
 
     <div id="walkInSlotsCtn" style="display: none;">
       <label>Select Time Slots:</label>
+      <p id="walkInSlotAvailability" class="slot-info"></p>
       <div class="walkin-slots" id="walkInSlots"></div>
     </div>
 
@@ -226,20 +243,35 @@ async function showWalkInSlots() {
 
   if (!labId || !date) {
     document.getElementById('walkInSlotsCtn').style.display = 'none';
+    const info = document.getElementById('walkInSlotAvailability');
+    if (info) info.textContent = '';
     return;
   }
 
   const res = await fetch(`/reservations/slots?labId=${labId}&date=${date}`);
-  const { takenSlots } = await res.json();
+  const { takenCounts, slotCapacity: apiSlotCapacity } = await res.json();
+
+  const slotCapacity = apiSlotCapacity || generateTimeSlots().length;
+  const taken = takenCounts || {};
+  const totalRemaining = generateTimeSlots().reduce((acc, time) => {
+    const remaining = slotCapacity - (taken[time] || 0);
+    return acc + Math.max(0, remaining);
+  }, 0);
+
+  const info = document.getElementById('walkInSlotAvailability');
+  if (info) {
+    info.textContent = `Slot capacity: ${slotCapacity}`;
+  }
 
   document.getElementById('walkInSlotsCtn').style.display = 'block';
   const container = document.getElementById('walkInSlots');
   container.innerHTML = '';
 
   generateTimeSlots().forEach(time => {
+    const remaining = slotCapacity - (taken[time] || 0);
     const btn = document.createElement('button');
-    btn.textContent = time;
-    if (takenSlots.includes(time)) {
+    btn.textContent = `${time} (${remaining})`;
+    if (remaining <= 0) {
       btn.disabled = true;
       btn.style.backgroundColor = '#ccc';
     } else {

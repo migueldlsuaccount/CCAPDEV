@@ -7,6 +7,7 @@ const labSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  availableSeats: [{ type: String, default: [] }],
   description: {
     type: String,
     default: ''

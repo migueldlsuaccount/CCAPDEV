@@ -197,6 +197,12 @@ button {
   box-sizing: border-box;
 }
 
+.slot-info {
+  margin: 0.25rem 0 0.75rem;
+  color: #00693e;
+  font-weight: bold;
+}
+
 .walkin-slots {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));

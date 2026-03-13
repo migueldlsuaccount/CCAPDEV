@@ -41,17 +41,48 @@ exports.getReservations = async (req, res) => {
   }
 };
 
+// Generate the same 30-minute slot times used by the UI
+function generateTimeSlots() {
+  const slots = [];
+  let hour = 8, minute = 0;
+  while (hour < 18) {
+    slots.push(String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'));
+    minute += 30;
+    if (minute === 60) { minute = 0; hour++; }
+  }
+  return slots;
+}
+
+function computeTakenCounts(reservations) {
+  const counts = {};
+  reservations.forEach(r => {
+    r.slots.forEach(slot => {
+      counts[slot] = (counts[slot] || 0) + 1;
+    });
+  });
+  return counts;
+}
+
 // GET /reservations/slots?labId=&date=
 exports.getTakenSlots = async (req, res) => {
   try {
     const { labId, date } = req.query;
     if (!labId || !date) return res.status(400).json({ error: 'labId and date required.' });
 
+    const lab = await Lab.findById(labId);
+    if (!lab) return res.status(404).json({ error: 'Lab not found.' });
+
     const reservations = await Reservation.find({ lab: labId, date });
     const takenSlots = reservations.flatMap(r => r.slots);
+    const takenCounts = computeTakenCounts(reservations);
 
-    res.json({ takenSlots });
+    const slotCapacity = (lab.availableSeats && lab.availableSeats.length > 0)
+      ? lab.availableSeats.length
+      : generateTimeSlots().length;
+
+    res.json({ takenSlots, takenCounts, slotCapacity });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch taken slots.' });
   }
 };
@@ -75,16 +106,27 @@ exports.createReservation = async (req, res) => {
       return res.status(400).json({ error: 'Date must be within the next 7 days.' });
     }
 
-    const existing = await Reservation.find({ lab: labId, date });
-    const takenSlots = existing.flatMap(r => r.slots);
-    const conflict = slots.some(s => takenSlots.includes(s));
-
-    if (conflict) {
-      return res.status(409).json({ error: 'One or more selected slots are already reserved.' });
-    }
-
     const lab = await Lab.findById(labId);
     if (!lab) return res.status(404).json({ error: 'Lab not found.' });
+
+    // Check if user already has a reservation at any of these slots
+    const userReservations = await Reservation.find({ user: req.session.userId, lab: labId, date });
+    const userTakenSlots = userReservations.flatMap(r => r.slots);
+    const userConflict = slots.some(s => userTakenSlots.includes(s));
+    if (userConflict) {
+      return res.status(409).json({ error: 'You already have a reservation at one or more of these time slots.' });
+    }
+
+    const existing = await Reservation.find({ lab: labId, date });
+    const takenCounts = computeTakenCounts(existing);
+    const slotCapacity = (lab.availableSeats && lab.availableSeats.length > 0)
+      ? lab.availableSeats.length
+      : generateTimeSlots().length;
+
+    const conflict = slots.some(s => (takenCounts[s] || 0) >= slotCapacity);
+    if (conflict) {
+      return res.status(409).json({ error: 'One or more selected slots are already fully booked.' });
+    }
 
     const reservation = await Reservation.create({
       lab: labId,
@@ -129,16 +171,27 @@ exports.createWalkIn = async (req, res) => {
       return res.status(400).json({ error: 'Date must be within the next 7 days.' });
     }
 
-    const existing = await Reservation.find({ lab: labId, date });
-    const takenSlots = existing.flatMap(r => r.slots);
-    const conflict = slots.some(s => takenSlots.includes(s));
-
-    if (conflict) {
-      return res.status(409).json({ error: 'One or more selected slots are already reserved.' });
-    }
-
     const lab = await Lab.findById(labId);
     if (!lab) return res.status(404).json({ error: 'Lab not found.' });
+
+    // Check if user already has a reservation at any of these slots
+    const userReservations = await Reservation.find({ user: req.session.userId, lab: labId, date });
+    const userTakenSlots = userReservations.flatMap(r => r.slots);
+    const userConflict = slots.some(s => userTakenSlots.includes(s));
+    if (userConflict) {
+      return res.status(409).json({ error: 'You already have a reservation at one or more of these time slots.' });
+    }
+
+    const existing = await Reservation.find({ lab: labId, date });
+    const takenCounts = computeTakenCounts(existing);
+    const slotCapacity = (lab.availableSeats && lab.availableSeats.length > 0)
+      ? lab.availableSeats.length
+      : generateTimeSlots().length;
+
+    const conflict = slots.some(s => (takenCounts[s] || 0) >= slotCapacity);
+    if (conflict) {
+      return res.status(409).json({ error: 'One or more selected slots are already fully booked.' });
+    }
 
     const reservation = await Reservation.create({
       lab: labId,
@@ -162,7 +215,7 @@ exports.createWalkIn = async (req, res) => {
   }
 };
 
-// PATCH /reservations/:id — owner or technician can edit date
+// PATCH /reservations/:id - owner or technician can edit date
 exports.editReservation = async (req, res) => {
   try {
     const { date } = req.body;
@@ -180,16 +233,21 @@ exports.editReservation = async (req, res) => {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
     }
 
+    const lab = await Lab.findById(reservation.lab);
+    const slotCapacity = (lab && lab.availableSeats && lab.availableSeats.length > 0)
+      ? lab.availableSeats.length
+      : generateTimeSlots().length;
+
     const existing = await Reservation.find({
       lab: reservation.lab,
       date,
       _id: { $ne: reservation._id }
     });
-    const takenSlots = existing.flatMap(r => r.slots);
-    const conflict = reservation.slots.some(s => takenSlots.includes(s));
+    const takenCounts = computeTakenCounts(existing);
+    const conflict = reservation.slots.some(s => (takenCounts[s] || 0) >= slotCapacity);
 
     if (conflict) {
-      return res.status(409).json({ error: 'One or more slots are already taken on that date.' });
+      return res.status(409).json({ error: 'One or more slots are already full on that date.' });
     }
 
     reservation.date = date;
@@ -202,7 +260,7 @@ exports.editReservation = async (req, res) => {
   }
 };
 
-// DELETE /reservations/:id — technician only, remove after 10 min grace period.
+// DELETE /reservations/:id - technician only, remove after 10 min grace period.
 exports.deleteReservation = async (req, res) => {
   try {
     if (req.session.userRole !== 'technician') {
@@ -228,6 +286,19 @@ exports.deleteReservation = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete reservation.' });
   }
+};
+
+// DELETE /reservations/:id - cancel reservation
+exports.cancelReservation = async (req, res) => {
+  const { id } = req.params;
+  const reservation = await Reservation.findById(id);
+  if (!reservation) return res.status(404).send('Reservation not found');
+  const lab = await Lab.findById(reservation.labId);
+  // Restore seat
+  lab.availableSeats.push(reservation.seat);
+  await lab.save();
+  await Reservation.findByIdAndDelete(id);
+  res.send(`Reservation exited at ${new Date().toISOString()}, seat ${reservation.seat} released`);
 };
 
 
