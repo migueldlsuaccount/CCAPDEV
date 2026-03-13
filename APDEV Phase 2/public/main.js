@@ -1,11 +1,11 @@
-// ── State ──────────────────────────────────────────────────────────────────
+// state
 let currentUser = null;
 let allLabs = [];
 let selectedSlots = [];
 let walkInSlots = [];
 let viewingReservations = false;
 
-// ── Bootstrap ─────────────────────────────────────────────────────────────
+// bootstrap
 (async () => {
   try {
     const res = await fetch('/auth/me');
@@ -21,7 +21,7 @@ let viewingReservations = false;
   }
 })();
 
-// ── Auth ──────────────────────────────────────────────────────────────────
+// auth
 async function logout() {
   await fetch('/auth/logout', { method: 'POST' });
   window.location.href = '/login';
@@ -31,12 +31,14 @@ function goToProfile() {
   window.location.href = '/profile';
 }
 
-// ── Labs ──────────────────────────────────────────────────────────────────
+// labs
 async function displayLabs() {
   const res = await fetch('/labs');
   const { labs } = await res.json();
   allLabs = labs;
 
+  // Only show the reservation form for students
+  // Technicians use the walk-in form instead
   if (currentUser.role === 'student') {
     const container = document.getElementById('labContainer');
     container.innerHTML = '';
@@ -79,7 +81,7 @@ async function displayLabs() {
   }
 }
 
-// ── Time Slots ────────────────────────────────────────────────────────────
+// time
 function generateTimeSlots() {
   const slots = [];
   let hour = 8, minute = 0;
@@ -91,7 +93,7 @@ function generateTimeSlots() {
   return slots;
 }
 
-// ── Student Slot Selection ────────────────────────────────────────────────
+// slot select (student)
 async function handleLabSelection() {
   const labId = document.getElementById('labSelect').value;
   const date = document.getElementById('resDate').value;
@@ -153,13 +155,16 @@ async function confirmReservationFromForm() {
     alert('Reservation Successful!');
     selectedSlots = [];
     await displayLabs();
-    if (viewingReservations) { viewingReservations = false; await showMyReservations(); }
+    if (viewingReservations) {
+      viewingReservations = false;
+      await showMyReservations();
+    }
   } catch {
     alert('Network error. Please try again.');
   }
 }
 
-// ── Technician Walk-in Section ────────────────────────────────────────────
+// walk-ins
 function showTechSection() {
   if (currentUser.role !== 'technician') return;
   document.getElementById('technicianSection').style.display = 'block';
@@ -236,6 +241,7 @@ async function showWalkInSlots() {
     btn.textContent = time;
     if (takenSlots.includes(time)) {
       btn.disabled = true;
+      btn.style.backgroundColor = '#ccc';
     } else {
       btn.onclick = () => {
         if (walkInSlots.includes(time)) {
@@ -272,7 +278,10 @@ async function confirmWalkIn() {
 
     alert(`Reservation for ${walkInName} confirmed!`);
     cancelWalkIn();
-    if (viewingReservations) { viewingReservations = false; await showMyReservations(); }
+    if (viewingReservations) {
+      viewingReservations = false;
+      await showMyReservations();
+    }
   } catch {
     alert('Network error. Please try again.');
   }
@@ -282,7 +291,7 @@ function cancelWalkIn() {
   showWalkInForm();
 }
 
-// ── Reservations Panel ────────────────────────────────────────────────────
+// reservation stuff
 async function toggleReservations() {
   if (viewingReservations) {
     document.getElementById('reservationSection').innerHTML = '';
@@ -311,8 +320,9 @@ async function showMyReservations() {
       const div = document.createElement('div');
       div.className = 'reservation';
 
-      const isOwner = r.owner.toString() === currentUser._id;
-      const isTech = currentUser.role === 'technician';
+      const isOwner = r.owner.toString() === currentUser._id.toString();
+      const isTech  = currentUser.role === 'technician';
+
       const profileLink = r.ownerEmail
         ? `<a href="/profile?email=${r.ownerEmail}" style="color:#00693e;">View Profile</a>`
         : '';
@@ -323,7 +333,7 @@ async function showMyReservations() {
         <p><strong>Date Reserved:</strong> ${r.date}</p>
         <p><strong>Slots:</strong> ${r.slots.join(', ')}</p>
         <p><strong>Requested At:</strong> ${new Date(r.requestTime).toLocaleString()}</p>
-        ${r.createdBy ? `<p><strong>Booked by:</strong> ${r.createdBy}</p>` : ''}
+        ${r.createdBy ? `<p><strong>Booked by technician:</strong> ${r.createdBy}</p>` : ''}
         ${isOwner || isTech ? `<button onclick="editReservation('${r._id}', '${r.date}')">Edit</button>` : ''}
         ${isTech ? `<button onclick="removeReservation('${r._id}')">Remove</button>` : ''}
         <hr>
@@ -374,3 +384,4 @@ async function removeReservation(id) {
     alert('Network error. Please try again.');
   }
 }
+
