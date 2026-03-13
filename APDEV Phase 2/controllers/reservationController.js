@@ -202,7 +202,7 @@ exports.editReservation = async (req, res) => {
   }
 };
 
-// DELETE /reservations/:id — technician only, within 10 min of booking
+// DELETE /reservations/:id — technician only, remove after 10 min grace period.
 exports.deleteReservation = async (req, res) => {
   try {
     if (req.session.userRole !== 'technician') {
@@ -213,12 +213,14 @@ exports.deleteReservation = async (req, res) => {
     if (!reservation) return res.status(404).json({ error: 'Reservation not found.' });
 
     const now = new Date();
-    const bookedAt = new Date(reservation.requestTime);
-    const diffMinutes = (now - bookedAt) / 60000;
+    const slotStart = new Date(`${reservation.date}T${reservation.slots[0]}:00`);
+    const minutesSinceStart = (now - slotStart) / 60000;
 
-    if (diffMinutes > 10) {
-      return res.status(400).json({ error: 'Cannot remove. The 10-minute window has passed.' });
+    // Student hasnt shown up in the 10 minute grace period
+    if (minutesSinceStart < 10) {
+      return res.status(400).json({ error: 'Cannot remove yet. The 10 minute grace period has not ended.' });
     }
+
 
     await reservation.deleteOne();
     res.json({ success: true });
@@ -227,4 +229,5 @@ exports.deleteReservation = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete reservation.' });
   }
 };
+
 
