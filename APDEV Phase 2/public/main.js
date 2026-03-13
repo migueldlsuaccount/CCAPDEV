@@ -309,7 +309,7 @@ async function showMyReservations() {
   try {
     const res = await fetch('/reservations');
     const { reservations } = await res.json();
-    section.innerHTML = '<h4>Your Reservations</h4>';
+    section.innerHTML = '<h4>All Reservations</h4>';
 
     if (reservations.length === 0) {
       section.innerHTML += '<p>No reservations found.</p>';
@@ -320,9 +320,10 @@ async function showMyReservations() {
       const div = document.createElement('div');
       div.className = 'reservation';
 
-      const isOwner = r.owner.toString() === currentUser._id.toString();
-      const isTech  = currentUser.role === 'technician';
+      // isOwner comes from the server, isTech checked client-side for button visibility
+      const isTech = currentUser.role === 'technician';
 
+      // Only show profile link if there's a real user email (not a walk-in)
       const profileLink = r.ownerEmail
         ? `<a href="/profile?email=${r.ownerEmail}" style="color:#00693e;">View Profile</a>`
         : '';
@@ -334,7 +335,7 @@ async function showMyReservations() {
         <p><strong>Slots:</strong> ${r.slots.join(', ')}</p>
         <p><strong>Requested At:</strong> ${new Date(r.requestTime).toLocaleString()}</p>
         ${r.createdBy ? `<p><strong>Booked by technician:</strong> ${r.createdBy}</p>` : ''}
-        ${isOwner || isTech ? `<button onclick="editReservation('${r._id}', '${r.date}')">Edit</button>` : ''}
+        ${r.isOwner || isTech ? `<button onclick="editReservation('${r._id}', '${r.date}')">Edit</button>` : ''}
         ${isTech ? `<button onclick="removeReservation('${r._id}')">Remove</button>` : ''}
         <hr>
       `;
