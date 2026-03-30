@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About | Lab Reservation</title>
+    <link rel="stylesheet" href="/public/main.css">
+</head>
+<body>
+
+    <header>
+        <h2>Lab Reservation</h2>
+        <div class="top-actions">
+            <button onclick="goBack()">Back to Home</button>
+        </div>
+    </header>
+
+    <main class="about-page">
+        <section class="hero-card">
+            <h1>About the System</h1>
+            <p>
+                The Lab Reservation System is a web-based platform that helps students and laboratory
+                technicians reserve computer lab slots, manage bookings, and monitor availability in
+                a faster and more organized way.
+            </p>
+        </section>
+
+        <section class="about-grid">
+            <div class="info-card">
+                <h3>Core Features</h3>
+                <ul class="feature-list">
+                    <li>User authentication through login and registration</li>
+                    <li>Lab slot reservation with seat and time selection</li>
+                    <li>Walk-in reservation support for technicians</li>
+                    <li>User profile viewing and editing</li>
+                    <li>Reservation tracking, updating, and management</li>
+                    <li>Real-time monitoring of available lab slots</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>Technology Stack</h3>
+                <ul class="stack-list">
+                    <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+                    <li><strong>Backend:</strong> Node.js with Express</li>
+                    <li><strong>Database:</strong> MongoDB</li>
+                </ul>
+            </div>
+
+            <div class="info-card full-width">
+                <h3>NPM Packages & Third-Party Libraries Used</h3>
+                <ul class="package-list">
+                    <li>
+                        <strong>express</strong>
+                        <span>Backend web framework used for routing, middleware handling, and server-side request processing.</span>
+                    </li>
+                    <li>
+                        <strong>mongoose</strong>
+                        <span>MongoDB object modeling library used to define schemas and handle database operations.</span>
+                    </li>
+                    <li>
+                        <strong>express-session</strong>
+                        <span>Handles user session management for authentication and login persistence.</span>
+                    </li>
+                    <li>
+                        <strong>connect-mongo</strong>
+                        <span>Stores session data in MongoDB so login sessions can persist properly.</span>
+                    </li>
+                    <li>
+                        <strong>bcrypt</strong>
+                        <span>Used for password hashing to improve account security.</span>
+                    </li>
+                    <li>
+                        <strong>nodemon</strong>
+                        <span>Development dependency that automatically restarts the server whenever code changes are made.</span>
+                        <div class="badge">Development Only</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-card full-width">
+                <h3>Project Information</h3>
+                <p>
+                    This system was developed as part of an academic project to improve laboratory
+                    scheduling, reduce manual coordination, and provide a more convenient reservation
+                    experience for both students and laboratory technicians.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function goBack() {
+            window.location.href = '/';
+        }
+    </script>
+
+</body>
+</html>
