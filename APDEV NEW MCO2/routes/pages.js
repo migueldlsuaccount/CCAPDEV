@@ -20,4 +20,8 @@ router.get('/profile', requireAuth, (req, res) => {
   res.sendFile('profile.html', { root: './views' });
 });
 
+router.get('/about', (req, res) => {
+  res.sendFile('about.html', { root: './views' });
+});
+
 module.exports = router;
