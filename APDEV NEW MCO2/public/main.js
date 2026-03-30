@@ -1,11 +1,10 @@
-// state
+
 let currentUser = null;
 let allLabs = [];
 let selectedSlots = [];
 let walkInSlots = [];
 let viewingReservations = false;
 
-// bootstrap
 (async () => {
   try {
     const res = await fetch('/auth/me');
@@ -21,7 +20,6 @@ let viewingReservations = false;
   }
 })();
 
-// auth
 async function logout() {
   await fetch('/auth/logout', { method: 'POST' });
   window.location.href = '/login';
@@ -31,7 +29,6 @@ function goToProfile() {
   window.location.href = '/profile';
 }
 
-// labs
 async function displayLabs() {
   const res = await fetch('/labs');
   const { labs } = await res.json();
@@ -93,7 +90,6 @@ async function displayLabs() {
   }
 }
 
-// time
 function generateTimeSlots() {
   const slots = [];
   let hour = 8, minute = 0;
@@ -217,7 +213,6 @@ async function confirmReservationFromForm() {
   }
 }
 
-// walk-ins
 function showTechSection() {
   if (currentUser.role !== 'technician') return;
   document.getElementById('technicianSection').style.display = 'block';
@@ -380,7 +375,6 @@ function cancelWalkIn() {
   showWalkInForm();
 }
 
-// reservation stuff
 async function toggleReservations() {
   if (viewingReservations) {
     document.getElementById('reservationSection').innerHTML = '';

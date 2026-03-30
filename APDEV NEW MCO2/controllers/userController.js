@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
 
-// GET /users/:id — get any user's public profile
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -12,7 +11,6 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// GET /users/by-email/:email — look up user by email (for profile links)
 exports.getUserByEmail = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email.toLowerCase() }).select('-password');
@@ -23,12 +21,10 @@ exports.getUserByEmail = async (req, res) => {
   }
 };
 
-// PATCH /users/:id — edit own profile (picture and description only)
 exports.updateProfile = async (req, res) => {
   try {
     const { picture, description } = req.body;
 
-    // Only allow editing own profile
     if (req.params.id !== req.session.userId.toString()) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
@@ -47,14 +43,24 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// DELETE /users/:id — delete own account and all reservations
 exports.deleteAccount = async (req, res) => {
   try {
     if (req.params.id !== req.session.userId.toString()) {
       return res.status(403).json({ error: 'Not authorized.' });
     }
+    
+    await Reservation.updateMany(
+      { user: req.params.id },
+      { $set: { user: null } }
+    );
 
-    await Reservation.deleteMany({ user: req.params.id });
+    const today = new Date().toISOString().split('T')[0];
+
+    await Reservation.deleteMany({
+      user: req.params.id,
+      date: { $gte: today }
+    });
+
     await User.findByIdAndDelete(req.params.id);
 
     req.session.destroy(() => {
@@ -66,7 +72,6 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
-// GET /users/:id/reservations — get a user's reservations (own or technician)
 exports.getUserReservations = async (req, res) => {
   try {
     const isSelf = req.params.id === req.session.userId.toString();

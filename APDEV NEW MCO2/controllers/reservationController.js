@@ -5,12 +5,15 @@ exports.getReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find({})
       .populate('lab', 'name')
-      .populate('user', 'name email')
+      .populate({
+        path: 'user',
+        select: 'name email'
+      })
       .populate('createdBy', 'name')
       .sort({ date: 1 });
 
     const shaped = reservations.map(r => {
-      const isOwner = r.user._id.toString() === req.session.userId.toString();
+      const isOwner = r.user && r.user._id.toString() === req.session.userId.toString();
       const isTech  = req.session.userRole === 'technician';
 
       return {
@@ -21,9 +24,13 @@ exports.getReservations = async (req, res) => {
           ? `${r.walkInName} (Walk-in)`
           : (r.anonymous && !isOwner && !isTech)
             ? 'Anonymous'
-            : r.user.name,
-        ownerEmail: r.walkInName || r.anonymous ? null : r.user.email,
-        owner: r.user._id,
+            : (r.user ? r.user.name : 'Deleted User'),
+
+        ownerEmail: r.walkInName || r.anonymous
+          ? null
+          : (r.user ? r.user.email : null),
+
+        owner: r.user ? r.user._id : null,
         isOwner,
         date: r.date,
         slots: r.slots,
@@ -32,8 +39,8 @@ exports.getReservations = async (req, res) => {
         createdBy: r.createdBy ? r.createdBy.name : null,
         requestTime: r.requestTime,
         isBlocked: r.isBlocked || false
-      };
-    });
+  };
+});
 
     res.json({ reservations: shaped });
   } catch (err) {
@@ -68,11 +75,16 @@ exports.getTakenSlots = async (req, res) => {
           } else if (r.isBlocked) {
             reservedBy = 'BLOCKED';
           } else if (!r.anonymous) {
-            reservedBy = r.user.name;
+            reservedBy = r.user ? r.user.name : 'Deleted User';
           } else {
             reservedBy = 'Anonymous';
           }
-          seatMap[r.seat].reservedBy.push({ slot, reservedBy, userId: r.user._id });
+
+          seatMap[r.seat].reservedBy.push({ 
+            slot, 
+            reservedBy, 
+            userId: r.user ? r.user._id : null 
+          });
         });
       }
     });
@@ -208,7 +220,6 @@ exports.createWalkIn = async (req, res) => {
   }
 };
 
-// POST /reservations/block - Technician blocks slots for walk-ins
 exports.blockSlots = async (req, res) => {
   try {
     if (req.session.userRole !== 'technician') {
@@ -246,7 +257,6 @@ exports.blockSlots = async (req, res) => {
       return res.status(409).json({ error: 'One or more selected slots are already reserved.' });
     }
 
-    // Create a blocked reservation
     const reservation = await Reservation.create({
       lab: labId,
       user: req.session.userId,
@@ -346,7 +356,6 @@ exports.deleteReservation = async (req, res) => {
   }
 };
 
-// GET /reservations/search?date=&time=&labId=
 exports.searchSlots = async (req, res) => {
   try {
     const { date, time } = req.query;

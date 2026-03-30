@@ -4,7 +4,6 @@ let isEditing = false;
 const urlParams = new URLSearchParams(window.location.search);
 const viewingEmail = urlParams.get('email');
 
-// ── Bootstrap ─────────────────────────────────────────────────────────────
 (async () => {
   try {
     const res = await fetch('/auth/me');
@@ -20,7 +19,6 @@ async function initProfile() {
   const container = document.getElementById('profileContainer');
 
   if (viewingEmail && viewingEmail !== currentUser.email) {
-    // Viewing someone else's profile
     try {
       const res = await fetch(`/users/by-email/${encodeURIComponent(viewingEmail)}`);
       if (!res.ok) { container.innerHTML = '<p>User not found.</p>'; return; }
@@ -30,12 +28,10 @@ async function initProfile() {
       container.innerHTML = '<p>Failed to load profile.</p>';
     }
   } else {
-    // Viewing own profile
     await displayOwnProfile();
   }
 }
 
-// ── Public Profile (read-only) ────────────────────────────────────────────
 function displayPublicProfile(user) {
   const container = document.getElementById('profileContainer');
   container.innerHTML = `
@@ -50,7 +46,6 @@ function displayPublicProfile(user) {
   `;
 }
 
-// ── Own Profile ───────────────────────────────────────────────────────────
 async function displayOwnProfile() {
   if (isEditing) {
     displayEditProfile(currentUser);
@@ -62,7 +57,6 @@ async function displayOwnProfile() {
 async function displayViewProfile(user) {
   const container = document.getElementById('profileContainer');
 
-  // Fetch own reservations
   let reservationsHtml = '<p>No reservations found.</p>';
   try {
     const res = await fetch(`/users/${user._id}/reservations`);
@@ -160,7 +154,6 @@ async function saveProfile() {
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Update failed.'); return; }
 
-    // Update local reference
     currentUser.picture = data.user.picture;
     currentUser.description = data.user.description;
 
@@ -189,7 +182,6 @@ async function deleteAccount() {
   }
 }
 
-// ── Nav ───────────────────────────────────────────────────────────────────
 async function logout() {
   await fetch('/auth/logout', { method: 'POST' });
   window.location.href = '/login';
